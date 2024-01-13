@@ -28,25 +28,44 @@ defmodule Hangman.Impl.Game do
     }
   end
 
+  ###################################################################################
   @spec make_move(t, String.t()) :: {t, tally :: Type.tally()}
-  def make_move(game = %{ game_state: state }, _guess) when state in [:won, :lost] do
+  def make_move(game = %{game_state: state}, _guess) when state in [:won, :lost] do
     game
     |> return_with_tally()
   end
 
   def make_move(game, guess) do
-    accept_guess?(game, guess, MapSet.member?(game.used, guess))
+    accept_guess(game, guess, MapSet.member?(game.used, guess))
     |> return_with_tally()
   end
 
-  @spec accept_guess?(t, String.t(), boolean()) :: t
-  defp accept_guess?(game, _guess, _already_accepted = true) do
-    %{ game | game_state: :already_used }
+  ###################################################################################
+  defp accept_guess(game, _guess, _already_accepted = true) do
+    %{game | game_state: :already_used}
   end
 
-  defp accept_guess?(game, guess, _already_accepted) do
-    %{ game | used: MapSet.put(game.used, guess) }
+  defp accept_guess(game, guess, _already_accepted) do
+    %{game | used: MapSet.put(game.used, guess)}
+    |> score_guess(Enum.member?(game.letters, guess))
   end
+
+  ###################################################################################
+  defp score_guess(game, _good_guess = true) do
+    new_state = maybe_won(MapSet.subset?(MapSet.new(game.letters), game.used))
+    %{game | game_state: new_state}
+  end
+
+  defp score_guess(game = %{turns_left: 1}, _bad_guess) do
+    %{game | game_state: :lost}
+  end
+  defp score_guess(game, _bad_guess) do
+    %{game | turns_left: game.turns_left - 1, game_state: :bad_guess}
+  end
+
+  ###################################################################################
+  defp maybe_won(true), do: :won
+  defp maybe_won(_), do: :good_guess
 
   @spec tally(t) :: Type.tally()
   defp tally(game) do
@@ -58,5 +77,5 @@ defmodule Hangman.Impl.Game do
     }
   end
 
-  defp return_with_tally(game), do: { game, tally(game) }
+  defp return_with_tally(game), do: {game, tally(game)}
 end
