@@ -1,13 +1,11 @@
 defmodule TextClient do
+  alias TextClient.Impl.Player
   @typep game :: Hangman.game
   @typep tally :: Hangman.tally
   @typep state :: {game, tally}
-  alias TextClient.Impl.Player
   @spec start() :: :ok
   defdelegate start, to: Player
 
   @spec interact(state) :: :ok
-  def interact(state) do
-
-  end
+  defdelegate interact(state), to: Player
 end
