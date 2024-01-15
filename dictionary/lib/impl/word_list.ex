@@ -9,8 +9,8 @@ defmodule Dictionary.Impl.WordList do
     |> String.split(~r[\n], trim: true)
   end
 
-  @spec random_word() :: String.t()
-  def random_word do
-    Enum.random(word_list())
+  @spec random_word(t) :: String.t()
+  def random_word(word_list) do
+    Enum.random(word_list)
   end
 end
